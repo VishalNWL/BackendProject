@@ -1,0 +1,17 @@
+{
+  "name": "creating-project-to-learn-backend",
+  "version": "1.0.0",
+  "description": "node js , javascript , backend",
+  "license": "ISC",
+  "author": "Vishal Nemiwal",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": " node src/index.js"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.4.2"
+  }
+}
