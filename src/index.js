@@ -3,16 +3,22 @@
 
 
 import dotenv from "dotenv"
-import express from "express";
+import {app} from "./app.js";
 import dbconnection from "./DB/index.js"
 
 dotenv.config({
     path:'./.env'
 })
 
-const app=express();
-
-dbconnection();
+dbconnection()
+.then(()=>{
+     app.listen(process.env.PORT,()=>{
+      console.log(`Server is listening on the port ${process.env.PORT}`)
+     })
+})
+.catch((err)=>{
+   console.log("There is some error in connecting with server");
+})
 
 
 
