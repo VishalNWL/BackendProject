@@ -2,7 +2,7 @@ import { v2 as cloudinary } from "cloudinary";
 import exp from "constants";
 import { response } from "express";
 import fs from "fs"
-import { fileFromPath } from "openai";
+
 
 cloudinary.config({ 
     cloud_name: process.env.cloud_name, 
@@ -11,23 +11,24 @@ cloudinary.config({
 });
 
 
-const uploadOnCloudinary=async (localPilePath)=>{
+const uploadOnCloudinary=async (localfilePath)=>{
     try {
         if(!localfilePath) return null;
 
         //upload file to  cloudinary
         const response=await cloudinary.uploader.upload(localfilePath,{
             resource_type:"auto"
-        })
+        }) 
 
         //file uploaded successfully
         console.log("File is uploaded on cloudinary",response.url);
         return response;
         
     } catch (error) {
-        fs.unlinkSync(localfilePath);//removing file from the local storage as it is malicious
-
-
+        console.error("Cloudinary Upload error");
+        console.log(error);
+        // fs.unlinkSync(localfilePath);//removing file from the local storage as it is malicious
+        return null;
     }
 }
 

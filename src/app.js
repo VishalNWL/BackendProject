@@ -18,6 +18,10 @@ app.use(cookieParser())
 //Importing router
 
 import userrouter from "./Routes/user.routes.js";
-app.get("/user",userrouter);
+app.use("/user",userrouter);
+
+app.get("/",(req,res)=>{
+    res.status(200).send("Everything is working");
+})
 
 export {app};
