@@ -5,6 +5,7 @@ import {uploadOnCloudinary} from "../Utils/cloudinary.js"
 import { Apiresponse } from "../Utils/Apiresponse.js";
 import { upload } from "../Middlewares/multer.middleware.js";
 import { jwtverify } from "../Middlewares/auth.middleware.js";
+import { availableParallelism } from "os";
 
 
 const generateAccessTokenAndRefreshToken=async (userid)=>{
@@ -176,7 +177,8 @@ const logoutUser=asyncHandler(async (req,res)=>{
 
 
 const refreshAccesstoken = asyncHandler(async (req,res)=>{
-   const incomingrefreshToken=req.cookies.refreshToken||req.body.refreshToken;
+   try {
+    const incomingrefreshToken=req.cookies.refreshToken||req.body.refreshToken;
 
    if(!incomingrefreshToken){
         throw new ApiError(400,"Unauthorized request");
@@ -205,8 +207,127 @@ const refreshAccesstoken = asyncHandler(async (req,res)=>{
     .json(
         new Apiresponse(200,{accessToken,refreshToken},"Refresh token generated successfully")
     )
+   } catch (error) {
+      throw new ApiError(400,"Some error occured");
+   }
 
 })
 
+const changePassword=asyncHandler(async(req,res)=>{
+    const {oldPassword,newPassword}=req.body;
 
-export {registeruser,loginUser,logoutUser,refreshAccesstoken};
+    const user=await User.findById(req.user?._idid);
+    const isPasswordCorrect=await user.isPasswordCorrect(newPassword);
+    if(!isPasswordCorrect){
+        throw new ApiError(400,"Password is not correct");
+    }
+
+    user.password=newPassword;
+    await user.save({validateBeforeSave:false});
+    
+    res.status(200)
+    .json(new Apiresponse(200,{newPassword},"Password updated successfully"));
+})
+
+const getCurrentUser=asyncHandler(async(req,res)=>{
+    const user=await User.findById(req.user?._idid);
+    res.status(200)
+    .json(new Apiresponse(200,{user},"User fetched successfully"));
+})
+
+const updateAccountdetail=asyncHandler(async(req,res)=>{
+    const {fullname,email}=req.body;
+    if(!fullname && !email){
+        throw new ApiError(400,{},"All fields are required");
+    }
+    
+    //this method is also good
+    // const user= await User.findById(req.user?.id);
+    // user.fullname=fullname;
+    // user.email=email;
+    
+    // user.save({validateBeforeSave:false});
+
+    const user=await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set:{                
+                fullname,
+                email:email
+            }
+        },
+        {new:true} //by this it will return user info after updating
+    ).select("-password")
+     
+    res.status(200)
+    .json(new Apiresponse(200,{},"Details updated successfully"));
+})
+
+const updateAvatar=asyncHandler(async (req,res)=>{
+    const avatarlocalpath=req.file?.avatar[0]?.path;
+    if(!avatarlocalpath){
+        throw new ApiError(400,"avatar is missing");
+    }
+   
+    const avatar=await uploadOnCloudinary(localfilepath);
+    if(!avatar.url){
+        throw new ApiError(500,"Error while uploading on Cloudinary");
+    }
+
+   const user= await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set:{
+                avatar:avatar.url
+            }
+        },
+        {
+            new:true
+        }
+    ).select("-password")
+  
+    res.status(200)
+    .json(new Apiresponse(200,{user},"Avatar updated successfully"));
+   
+})
+const updateCoverimg=asyncHandler(async (req,res)=>{
+    const Coverimglocalpath=req.file?.avatar[0]?.path;
+    if(!Coverimglocalpath){
+        throw new ApiError(400,"CoverImage is missing");
+    }
+   
+    const Coverimg=await uploadOnCloudinary(Coverimglocalpath);
+    if(!Coverimg.url){
+        throw new ApiError(500,"Error while uploading on Cloudinary");
+    }
+
+   const user= await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set:{
+                coverImage:Coverimg.url
+            }
+        },
+        {
+            new:true
+        }
+    ).select("-password")
+  
+    res.status(200)
+    .json(new Apiresponse(200,{user},"CoverImage updated successfully"));
+   
+})
+
+
+
+
+export {
+    registeruser,
+     loginUser,
+     logoutUser,
+     refreshAccesstoken,
+     changePassword,
+     getCurrentUser,
+     updateAccountdetail,
+     updateAvatar,
+     updateCoverimg
+    };
