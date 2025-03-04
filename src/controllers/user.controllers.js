@@ -6,6 +6,8 @@ import { Apiresponse } from "../Utils/Apiresponse.js";
 import { upload } from "../Middlewares/multer.middleware.js";
 import { jwtverify } from "../Middlewares/auth.middleware.js";
 import { availableParallelism } from "os";
+import { channel, subscribe } from "diagnostics_channel";
+import { subscription } from "../Models/subscription.model.js";
 
 
 const generateAccessTokenAndRefreshToken=async (userid)=>{
@@ -318,7 +320,71 @@ const updateCoverimg=asyncHandler(async (req,res)=>{
 })
 
 
+const getUserChannelProfile=asyncHandler(async (req,res)=>{
+    const {username}=req.params;
 
+    if(!username?.trim()){
+        throw new Apiresponse(400,"Username is required");
+    }
+
+  const channel=await User.aggregate([
+        {
+            $match: username?.toLowerCase()
+        },
+        {
+            $lookup:{
+                from:"subscription",
+                localField:"_id",
+                foreignField:"channel",
+                as:"subscribers"
+            }
+        },
+        {
+            $lookup:{
+                from:"subscription",
+                localField:"_id",
+                foreignField:"subscriber",
+                as:"subscribedTo"
+            }
+        },
+        {
+            $addFields:{
+                subscribersCount:{
+                    $size:"$subscribers"
+                },
+                channelsSubscribedToCount:{
+                    $size:"$subscribedTo"
+                },
+                
+                isSubscribed:{
+                     if:{$in: [req.user?._id, "subscribers.subscriber"]},
+                     then:false,
+                     else:false
+                }
+            }
+        },
+        {
+            $project:{
+                fullname:1,
+                username:1,
+                subscribersCount:1,
+                channelsSubscribedToCount:1,
+                avatar:1,
+                coverImage:1,
+                email:1
+            }
+        }
+    ])
+
+  if(!channel?.length){
+    throw new ApiError(404,"Channel does not exists")
+  }
+   
+  res.status(200)
+  .json(
+    new Apiresponse(200,channel[0],"User channel fetched successfully")
+)
+})
 
 export {
     registeruser,
@@ -329,5 +395,6 @@ export {
      getCurrentUser,
      updateAccountdetail,
      updateAvatar,
-     updateCoverimg
+     updateCoverimg,
+     getUserChannelProfile
     };
