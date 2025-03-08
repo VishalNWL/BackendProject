@@ -8,6 +8,7 @@ import { jwtverify } from "../Middlewares/auth.middleware.js";
 import { availableParallelism } from "os";
 import { channel, subscribe } from "diagnostics_channel";
 import { subscription } from "../Models/subscription.model.js";
+import {ObjectId} from "mongoose";
 
 
 const generateAccessTokenAndRefreshToken=async (userid)=>{
@@ -386,6 +387,54 @@ const getUserChannelProfile=asyncHandler(async (req,res)=>{
 )
 })
 
+
+const getUserWatchHistory=asyncHandler(async (req,res)=>{
+     const user=await User.aggregate([
+        {
+            $match:{
+                _id: new ObjectId(req.user._id)
+            }
+        },
+        {
+           $lookup:{
+              from:"Video",
+              localField:"watchwatchHistory",
+              foreignField:"_id",
+              as:"watchHistory",
+             //we are inside watch history and now we have to connect owner to user again
+              pipeline:[
+                {
+                    $lookup:{
+                        from:"User",
+                        localField:"owner",
+                        foreignField:"_id",
+                        as:"owner",
+                        pipeline:[
+                            {
+                                $project:{
+                                    fullname:1,
+                                    username:1,
+                                    avatar:1
+                                }
+                            },
+                            {
+                                $addFields:{
+                                    owner:{
+                                        $first:"$owner"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+              ]
+           }
+        }
+     ])
+
+     res.status(200)
+     .json(new Apiresponse(200,user[0],"User watch history fetched successfully"));
+})
 export {
     registeruser,
      loginUser,
@@ -396,5 +445,6 @@ export {
      updateAccountdetail,
      updateAvatar,
      updateCoverimg,
-     getUserChannelProfile
+     getUserChannelProfile,
+     getUserWatchHistory
     };
