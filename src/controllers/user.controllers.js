@@ -5,7 +5,6 @@ import {uploadOnCloudinary} from "../Utils/cloudinary.js"
 import { Apiresponse } from "../Utils/Apiresponse.js";
 import { upload } from "../Middlewares/multer.middleware.js";
 import { jwtverify } from "../Middlewares/auth.middleware.js";
-import { availableParallelism } from "os";
 import { channel, subscribe } from "diagnostics_channel";
 import { subscription } from "../Models/subscription.model.js";
 import {ObjectId} from "mongoose";
@@ -386,7 +385,6 @@ const getUserChannelProfile=asyncHandler(async (req,res)=>{
     new Apiresponse(200,channel[0],"User channel fetched successfully")
 )
 })
-
 
 const getUserWatchHistory=asyncHandler(async (req,res)=>{
      const user=await User.aggregate([

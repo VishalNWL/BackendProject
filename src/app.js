@@ -17,8 +17,31 @@ app.use(cookieParser())
 
 //Importing router
 
-import userrouter from "./Routes/user.routes.js";
-app.use("/user",userrouter);
+
+//routes import
+import userRouter from './Routes/user.routes.js'
+// import healthcheckRouter from "./Routes/healthcheck.routes.js"
+// import tweetRouter from "./routes/tweet.routes.js"
+// import subscriptionRouter from "./routes/subscription.routes.js"
+import videoRouter from "./Routes/video.routes.js"
+import commentRouter from "./Routes/comments.routes.js"
+// import likeRouter from "./Routes/like.routes.js"
+// import playlistRouter from "./Routes/playlist.routes.js"
+// import dashboardRouter from "./Routes/dashboard.routes.js"
+
+
+
+//routes declaration
+// app.use("/healthcheck", healthcheckRouter)
+app.use("/user", userRouter)
+// app.use("/api/v1/tweets", tweetRouter)
+// app.use("/api/v1/subscriptions", subscriptionRouter)
+app.use("/videos", videoRouter)
+app.use("/comments", commentRouter)
+// app.use("/api/v1/likes", likeRouter)
+// app.use("/api/v1/playlist", playlistRouter)
+// app.use("/api/v1/dashboard", dashboardRouter)
+
 
 app.get("/",(req,res)=>{
     res.status(200).send("Everything is working");
