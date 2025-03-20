@@ -67,5 +67,5 @@ I created **Vidtube** to deepen my understanding of backend development, APIs, a
 
 ---
 
-**🚀 Developed by [Your Name]**
+**🚀 Developed by Vishal Nemiwal**
 
